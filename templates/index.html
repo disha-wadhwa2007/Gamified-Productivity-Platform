@@ -1,0 +1,383 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChoreQuest :: Gamified Productivity Realm</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
+</head>
+<body>
+
+    <!-- Master Header & Player HUD -->
+    <header class="master-header">
+        <div class="header-inner">
+            <div class="brand-section">
+                <div class="brand-logo">⚔️</div>
+                <div>
+                    <h1 class="brand-title">ChoreQuest</h1>
+                    <div class="brand-subtitle">The Gamified Productivity Platform</div>
+                </div>
+            </div>
+
+            <!-- Gamified Player HUD -->
+            <div class="player-hud">
+                <div class="player-info">
+                    <div class="player-top-line">
+                        <span class="player-name" id="playerName">Cyber Paladin</span>
+                        <span class="badge-level" id="playerLevel">LVL 1</span>
+                        <span class="combo-streak-badge" id="playerCombo" style="display:none;">⚡ 2x STREAK</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="xp-bar-container">
+                            <div class="xp-bar-fill" id="playerXpBar" style="width: 0%;"></div>
+                        </div>
+                        <span class="xp-label" id="playerXpText">0 / 100 XP</span>
+                    </div>
+                </div>
+
+                <div class="gold-counter">
+                    <span id="playerGold">100 🪙</span>
+                </div>
+            </div>
+
+            <!-- Controls & Live Guardrails -->
+            <div class="header-controls">
+                <div class="status-indicator live" id="wsStatusBadge" title="Real-Time WebSocket Link"></div>
+
+                <span class="badge badge-real" id="dryRunModeBadge">⚡ LIVE REAL-WORLD</span>
+                <label class="switch-label" title="Toggle simulation vs real disk/db execution">
+                    <input type="checkbox" id="dryRunToggle" onchange="window.App.toggleDryRun()">
+                    <span>Dry Run</span>
+                </label>
+
+                <button class="btn btn-sm btn-archive" id="soundToggleBtn" onclick="window.App.toggleSound()">
+                    🔊 Audio On
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub Navigation Tabs -->
+    <nav class="sub-nav">
+        <div class="nav-links">
+            <button class="nav-item active" data-tab="dashboard">
+                📊 Mission Control
+            </button>
+            <button class="nav-item" data-tab="email">
+                🚀 Spam Galaxy Defender
+            </button>
+            <button class="nav-item" data-tab="files">
+                📦 Dungeon Cargo Sorter
+            </button>
+            <button class="nav-item" data-tab="expenses">
+                🗡️ Receipt Rogue
+            </button>
+            <button class="nav-item" data-tab="code">
+                💻 Matrix Bug Exterminator
+            </button>
+            <button class="nav-item" data-tab="story">
+                📖 Story Chronicles
+            </button>
+            <button class="nav-item" data-tab="audit">
+                ⏳ Time Machine Audit
+            </button>
+            <button class="nav-item" data-tab="skills" onclick="window.App.renderSkillsTab()">
+                🔮 Skill Tree & Perks
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+        <!-- TAB 1: Mission Control (Dashboard) -->
+        <div class="tab-pane active" id="tab-dashboard">
+            <div class="metrics-row">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Disk Storage Saved</span>
+                        <span class="metric-icon">💾</span>
+                    </div>
+                    <div class="metric-val" id="metricBytesSaved">0 MB</div>
+                    <div class="metric-foot">Duplicates & temp purges</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Emails Purged</span>
+                        <span class="metric-icon">✉️</span>
+                    </div>
+                    <div class="metric-val" id="metricEmailsCleaned">0</div>
+                    <div class="metric-foot">Spam blasted & VIP filed</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Vampire Subs Slayed</span>
+                        <span class="metric-icon">🧛</span>
+                    </div>
+                    <div class="metric-val" id="metricMoneySaved">$0.00/mo</div>
+                    <div class="metric-foot">Recurring money saved</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Code Bugs Exterminated</span>
+                        <span class="metric-icon">👾</span>
+                    </div>
+                    <div class="metric-val" id="metricBugsFixed">0</div>
+                    <div class="metric-foot">Verified AST patches</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Total Chores Vanquished</span>
+                        <span class="metric-icon">⚡</span>
+                    </div>
+                    <div class="metric-val" id="metricTotalActions">0</div>
+                    <div class="metric-foot">Real background operations</div>
+                </div>
+            </div>
+
+            <!-- Quick Play Launchpad -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">🎮 Choose Your Battle Arena</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                            Playing any game automatically executes the corresponding real-world productivity task in the background!
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+                    <div class="bounty-card" style="cursor: pointer;" onclick="window.App.switchTab('email')">
+                        <div style="font-size: 2.5rem;">🚀</div>
+                        <h4>Spam Galaxy Defender</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Blast phishing leviathans and coupon swarm drones with space lasers while rescuing VIP client emails.
+                        </p>
+                        <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">Enter Dogfight ➔</button>
+                    </div>
+
+                    <div class="bounty-card" style="cursor: pointer;" onclick="window.App.switchTab('files')">
+                        <div style="font-size: 2.5rem;">📦</div>
+                        <h4>Dungeon Cargo Sorter</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Sort loose documents, installers, and media into enchanted storage vaults and crush duplicate impostors.
+                        </p>
+                        <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">Enter Warehouse ➔</button>
+                    </div>
+
+                    <div class="bounty-card" style="cursor: pointer;" onclick="window.App.switchTab('expenses')">
+                        <div style="font-size: 2.5rem;">🗡️</div>
+                        <h4>Receipt Rogue: Vampire Slayer</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Hunt down mystery expense bounties, categorize business spending, and stake vampire SaaS subscriptions.
+                        </p>
+                        <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">Enter Tavern ➔</button>
+                    </div>
+
+                    <div class="bounty-card" style="cursor: pointer;" onclick="window.App.switchTab('code')">
+                        <div style="font-size: 2.5rem;">💻</div>
+                        <h4>Matrix Bug Exterminator</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Squash infinite loops, null voids, and SQL injection goblins with live AST patches and git diff verification.
+                        </p>
+                        <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">Access Mainframe ➔</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Email Cleaner Game -->
+        <div class="tab-pane" id="tab-email">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">🚀 Spam Galaxy Defender</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Each enemy destroyed purges real unread spam. Shielding gold vessels stars VIP transmissions!
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <span class="badge badge-warning" id="emailCountBadge">0 Unread</span>
+                    <span class="badge badge-success" id="emailFreedKb">0 KB Purged</span>
+                    <button class="btn btn-sm btn-archive" onclick="window.EmailGame.resetMailbox()">Reset Mailbox</button>
+                </div>
+            </div>
+
+            <div class="arcade-arena">
+                <canvas id="emailCanvas" class="arcade-canvas" width="800" height="420"></canvas>
+                <div class="arcade-controls-hint">
+                    <span>🎮 <strong>Controls:</strong> [A] / [D] or Mouse to Move</span>
+                    <span>⚡ [SPACE] or Left Click to Shoot Laser</span>
+                    <span>⭐ Blue/Red = Spam & Phishing, Gold = VIP Client</span>
+                </div>
+            </div>
+
+            <!-- Email Deck Quick Triage -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">📬 Real Mailbox Deck Triage</h3>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Real background actions executed atomically</span>
+                </div>
+                <div class="email-deck-grid" id="emailDeckList">
+                    <!-- Populated by email_game.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: File Organization Game -->
+        <div class="tab-pane" id="tab-files">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">📦 Dungeon Cargo Sorter & Duplicate Crusher</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Flick stray files into storage vaults. Crush duplicate file monsters using byte-for-byte MD5 verification!
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <span class="badge badge-subtle" id="fileTotalCount">0 Files</span>
+                    <span class="badge badge-subtle" id="fileTotalSize">0 B</span>
+                    <span class="badge badge-warning" id="fileDupCount">0 Duplicates</span>
+                    <button class="btn btn-sm btn-primary" onclick="window.FileGame.autoOrganizeRemaining()">
+                        🧲 Gravity Sweep All
+                    </button>
+                    <button class="btn btn-sm btn-archive" onclick="window.FileGame.resetSampleFiles()">
+                        Spawn Sample Wave
+                    </button>
+                </div>
+            </div>
+
+            <!-- Conveyor Belt Sorter -->
+            <div class="glass-panel" id="fileConveyor">
+                <!-- Populated by file_game.js -->
+            </div>
+
+            <!-- Duplicate File Crusher -->
+            <div id="duplicateCrusherSection">
+                <!-- Populated by file_game.js -->
+            </div>
+        </div>
+
+        <!-- TAB 4: Expense Bounty Game -->
+        <div class="tab-pane" id="tab-expenses">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">🗡️ Receipt Rogue: Expense Bounty Tavern</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Classify expense bounties into Kingdom ledgers and stake recurring Subscription Vampires draining your treasury.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <span class="badge badge-subtle" id="expenseBurnAmount">$0.00 Total</span>
+                    <span class="badge badge-success" id="expenseVampireSaved">$0.00/mo Slayed</span>
+                    <button class="btn btn-sm btn-primary" onclick="window.ExpenseGame.exportLedger()">
+                        📊 Export CSV & Excel
+                    </button>
+                    <button class="btn btn-sm btn-archive" onclick="window.ExpenseGame.resetExpenses()">
+                        Reset Ledger
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vampire Subscription Lair -->
+            <div id="vampireSectionContainer">
+                <!-- Populated by expense_game.js -->
+            </div>
+
+            <!-- Uncategorized Bounty Board -->
+            <div class="glass-panel" style="margin-top: 1.5rem;">
+                <div class="panel-header">
+                    <h3 class="panel-title">📜 Active Expense Bounty Contracts</h3>
+                    <span class="badge badge-warning" id="expenseBountyCount">0 Unclassified</span>
+                </div>
+                <div id="bountyBoardContainer">
+                    <!-- Populated by expense_game.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: Code Debugging Game -->
+        <div class="tab-pane" id="tab-code">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">💻 Matrix Cyberpunk Bug Exterminator</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Corrupted code files detected in the mainframe! Isolate vulnerabilities, deploy patches, and verify git diffs.
+                    </p>
+                </div>
+            </div>
+
+            <div id="codeTerminalContainer">
+                <!-- Populated by code_game.js -->
+            </div>
+        </div>
+
+        <!-- TAB 6: Story Campaign Mode -->
+        <div class="tab-pane" id="tab-story">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">📖 The Chronicles of the Pure Realm</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                        A grand 4-chapter narrative campaign spanning email purification, catacomb organization, treasury audit, and core debugging.
+                    </p>
+                </div>
+            </div>
+
+            <div id="storyCampaignContainer">
+                <!-- Populated by story_mode.js -->
+            </div>
+        </div>
+
+        <!-- TAB 7: Time Machine Audit (Rollbacks) -->
+        <div class="tab-pane" id="tab-audit">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">⏳ Time Machine Audit & 1-Click Rollback</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Complete transparency and safety. Every background task executed in games is logged atomically and can be reversed with one click.
+                    </p>
+                </div>
+                <button class="btn btn-sm btn-archive" onclick="window.App.loadTransactions()">
+                    🔄 Refresh Journal
+                </button>
+            </div>
+
+            <div class="glass-panel">
+                <div id="transactionLogList">
+                    <!-- Populated by app.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 8: Skill Tree -->
+        <div class="tab-pane" id="tab-skills">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">🔮 Paladin Skill Tree & Perks</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Spend earned quest gold to unlock productivity superpowers!
+                    </p>
+                </div>
+            </div>
+
+            <div class="skill-tree-grid" id="skillTreeGrid">
+                <!-- Populated by app.js -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="/static/js/sound_fx.js"></script>
+    <script src="/static/js/particle_fx.js"></script>
+    <script src="/static/js/games/email_game.js"></script>
+    <script src="/static/js/games/file_game.js"></script>
+    <script src="/static/js/games/expense_game.js"></script>
+    <script src="/static/js/games/code_game.js"></script>
+    <script src="/static/js/story_mode.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
